@@ -1,0 +1,42 @@
+version: "3"
+
+services:
+  smartsens.tb:
+    image: smartsens.tb:1.0
+    build: ./thingsboard
+    container_name: smartsens.tb
+    restart: always
+    ports:
+      - "13090:9090"
+      - "13883:1883"
+      - "13070:7070"
+      - "13683-13688:5683-5688/udp"
+    environment:
+      TB_QUEUE_TYPE: in-memory
+    volumes:
+      - "smartsens_tb_data:/data"
+      - "smartsens_tb_logs:/var/log/thingsboard"
+
+  smartsens.gw:
+    image: smartsens.gw:1.0
+    build: ./gateway
+    container_name: smartsens.gw
+    restart: always
+    depends_on:
+      - smartsens.tb
+    ports:
+      - "13999:9999"
+
+  smartsens.em:
+    image: smartsens.em:1.0
+    build: ./emulator
+    container_name: smartsens.em
+    restart: always
+    depends_on:
+      - smartsens.gw
+
+volumes:
+  smartsens_tb_data:
+    external: true
+  smartsens_tb_logs:
+    external: true
